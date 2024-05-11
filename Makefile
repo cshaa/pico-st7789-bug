@@ -1,3 +1,5 @@
+CFLAGS:="-DPICO_BOARD=pico $(CFLAGS)"
+
 .PHONY: clean build
 
 clean:
@@ -5,5 +7,8 @@ clean:
 
 build:
 	@mkdir -p build
-	@cd build; cmake ..
+	@cd build; cmake .. $(CFLAGS)
 	@cd build; make main
+
+flash:
+	@picotool load -f build/main.uf2
