@@ -1,0 +1,8 @@
+{
+  "configurations": [
+    {
+      "name": "Linux",
+      "includePath": ["${workspaceFolder}/**", "/opt/pico-sdk/**"]
+    }
+  ]
+}
