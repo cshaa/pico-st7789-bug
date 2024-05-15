@@ -28,32 +28,48 @@ static void st7789_cmd(uint8_t cmd, const uint8_t *data, size_t len)
     }
     st7789_data_mode = false;
 
-    sleep_us(1);
+    sleep_ms(10);
     if (st7789_cfg.gpio_cs > -1)
     {
         gpio_put(st7789_cfg.gpio_cs, 0);
     }
     gpio_put(st7789_cfg.gpio_dc, 0);
-    sleep_us(1);
+    sleep_ms(10);
 
     spi_write_blocking(st7789_cfg.spi, &cmd, sizeof(cmd));
+    while (spi0_hw->sr & SPI_SSPSR_BSY_BITS)
+    {
+        tight_loop_contents();
+    }
 
     if (len)
     {
-        sleep_us(1);
+        sleep_ms(10);
         gpio_put(st7789_cfg.gpio_dc, 1);
-        sleep_us(1);
+        sleep_ms(10);
 
         spi_write_blocking(st7789_cfg.spi, data, len);
+        while (spi0_hw->sr & SPI_SSPSR_BSY_BITS)
+        {
+            tight_loop_contents();
+        }
     }
 
-    sleep_us(1);
+    sleep_ms(10);
     if (st7789_cfg.gpio_cs > -1)
     {
         gpio_put(st7789_cfg.gpio_cs, 1);
     }
     gpio_put(st7789_cfg.gpio_dc, 1);
-    sleep_us(1);
+    sleep_ms(10);
+}
+
+void wait_while_spi_busy()
+{
+    while (((spi_hw_t *)st7789_cfg.spi)->sr & SPI_SSPSR_BSY_BITS)
+    {
+        tight_loop_contents();
+    }
 }
 
 void st7789_caset(uint16_t xs, uint16_t xe)
@@ -123,10 +139,12 @@ void st7789_init(const struct st7789_config *config, uint16_t width, uint16_t he
     }
     gpio_put(st7789_cfg.gpio_dc, 1);
     gpio_put(st7789_cfg.gpio_rst, 1);
+
     sleep_ms(100);
 
     // SWRESET (01h): Software Reset
-    st7789_cmd(0x01, NULL, 0);
+    uint8_t data = 0;
+    st7789_cmd(0x01, &data, 0);
     sleep_ms(150);
 
     // SLPOUT (11h): Sleep Out
@@ -168,25 +186,29 @@ void st7789_init(const struct st7789_config *config, uint16_t width, uint16_t he
 
 void st7789_ramwr()
 {
-    sleep_us(1);
+    sleep_ms(10);
     if (st7789_cfg.gpio_cs > -1)
     {
         gpio_put(st7789_cfg.gpio_cs, 0);
     }
     gpio_put(st7789_cfg.gpio_dc, 0);
-    sleep_us(1);
+    sleep_ms(10);
 
     // RAMWR (2Ch): Memory Write
     uint8_t cmd = 0x2c;
     spi_write_blocking(st7789_cfg.spi, &cmd, sizeof(cmd));
+    while (((spi_hw_t *)st7789_cfg.spi)->sr & SPI_SSPSR_BSY_BITS)
+    {
+        tight_loop_contents();
+    }
 
-    sleep_us(1);
+    sleep_ms(10);
     if (st7789_cfg.gpio_cs > -1)
     {
         gpio_put(st7789_cfg.gpio_cs, 0);
     }
     gpio_put(st7789_cfg.gpio_dc, 1);
-    sleep_us(1);
+    sleep_ms(10);
 }
 
 void st7789_write(const void *data, size_t len)
@@ -208,6 +230,10 @@ void st7789_write(const void *data, size_t len)
     }
 
     spi_write16_blocking(st7789_cfg.spi, data, len / 2);
+    while (spi0_hw->sr & SPI_SSPSR_BSY_BITS)
+    {
+        tight_loop_contents();
+    }
 }
 
 void st7789_put(uint16_t pixel)
@@ -217,6 +243,7 @@ void st7789_put(uint16_t pixel)
 
 void st7789_fill(uint16_t pixel)
 {
+    // printf("Filling screen with %x.\n", pixel);
     int num_pixels = st7789_width * st7789_height;
 
     st7789_set_cursor(0, 0);
@@ -225,6 +252,7 @@ void st7789_fill(uint16_t pixel)
     {
         st7789_put(pixel);
     }
+    // printf("Filling done.\n");
 }
 
 void st7789_set_cursor(uint16_t x, uint16_t y)

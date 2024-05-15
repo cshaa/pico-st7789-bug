@@ -57,15 +57,16 @@ int main()
         .gpio_rst = 21,
         .gpio_bl = 22,
     };
-    // Uncomment the following line to see the Pico hang:
-    // st7789_init(&lcd_config, 240, 240);
+    st7789_init(&lcd_config, 240, 240);
 
     while (true)
     {
         printf("Screen ahoy! (%i)\n", time_ms() / 1000);
         led_on();
+        st7789_fill(0x0000);
         sleep_ms(500);
         led_off();
+        st7789_fill(0xffff);
         sleep_ms(500);
     }
 }
