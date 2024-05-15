@@ -1,6 +1,6 @@
 # Raspberry Pi Pico – Demo Project
 
-Blinks the built-in LED and print "Hello World (elapsed time)" to the USB tty.
+Blinks the built-in LED and print "Screen ahoy (elapsed time)" to the USB tty.
 
 ```sh
 make build
@@ -11,3 +11,4 @@ make build CFLAGS="-DPICO_W=OFF" # for Pico
 make flash
 ```
 
+If you uncomment [line 61](https://github.com/m93a/pico-st7789-bug/blob/main/main.c#L61), re-build and re-flash, the Pico will hang.
