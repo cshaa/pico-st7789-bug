@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "st7789.h"
 
 #ifdef PICO_W
 const uint LED_PIN = CYW43_WL_GPIO_LED_PIN;
@@ -47,9 +48,21 @@ int main()
 
     led_setup();
 
+    const struct st7789_config lcd_config = {
+        .spi = PICO_DEFAULT_SPI_INSTANCE,
+        .gpio_din = PICO_DEFAULT_SPI_TX_PIN,
+        .gpio_clk = PICO_DEFAULT_SPI_SCK_PIN,
+        .gpio_cs = -1,
+        .gpio_dc = 20,
+        .gpio_rst = 21,
+        .gpio_bl = 22,
+    };
+    // Uncomment the following line to see the Pico hang:
+    // st7789_init(&lcd_config, 240, 240);
+
     while (true)
     {
-        printf("Hello, world! (%i)\n", time_ms() / 1000);
+        printf("Screen ahoy! (%i)\n", time_ms() / 1000);
         led_on();
         sleep_ms(500);
         led_off();
