@@ -64,8 +64,10 @@ int main()
     {
         printf("Screen ahoy! (%i)\n", time_ms() / 1000);
         led_on();
+        st7789_fill(0x0000);
         sleep_ms(500);
         led_off();
+        st7789_fill(0xffff);
         sleep_ms(500);
     }
 }
